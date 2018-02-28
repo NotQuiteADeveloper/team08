@@ -17,19 +17,20 @@ import capyle.utils as utils
 import numpy as np
 
 
-def transition_func(grid, neighbourstates, neighbourcounts):
-    # dead = state == 0, live = state == 1
+def transition_func(grid, neighbourstates, neighbourcounts):   
+    # dead = state == 0(green), live = state == 1(fire)
     # unpack state counts for state 0 and state 1
     dead_neighbours, live_neighbours = neighbourcounts
+    repr(live_neighbours)
     # create boolean arrays for the birth & survival rules
     # if 3 live neighbours and is dead -> cell born
-    birth = (live_neighbours == 3) & (grid == 0)
+    birth = (live_neighbours == 1) & (grid == 0)
     # if 2 or 3 live neighbours and is alive -> survives
-    survive = ((live_neighbours == 2) | (live_neighbours == 3)) & (grid == 1)
+    survive = ((live_neighbours == 1) | (live_neighbours == 1)) & (grid == 1)
     # Set all cells to 0 (dead)
     grid[:, :] = 0
     # Set cells to 1 where either cell is born or survives
-    grid[birth | survive] = 1
+    grid[birth] = 1
     return grid
 
 
@@ -37,7 +38,7 @@ def setup(args):
     config_path = args[0]
     config = utils.load(config_path)
     # ---THE CA MUST BE RELOADED IN THE GUI IF ANY OF THE BELOW ARE CHANGED---
-    config.title = "Conway's game of life"
+    config.title = "FIRE SPREAD"
     config.dimensions = 2
     config.states = (0, 1)
     # ------------------------------------------------------------------------
@@ -46,7 +47,7 @@ def setup(args):
 
     config.state_colors = [(0.196, 0.804, 0.196),(1.000, 0.000, 0.000)]
     # config.num_generations = 150
-    # config.grid_dims = (200,200)
+    config.grid_dims = (50,50)
 
     # ----------------------------------------------------------------------
 
