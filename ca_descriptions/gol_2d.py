@@ -37,16 +37,33 @@ def setup(args):
     config_path = args[0]
     config = utils.load(config_path)
     # ---THE CA MUST BE RELOADED IN THE GUI IF ANY OF THE BELOW ARE CHANGED---
-    config.title = "Conway's game of life"
+    config.title = "fire"
     config.dimensions = 2
-    config.states = (0, 1)
+    config.states = (0, 1, 2, 3, 4, 5, 6)
+    # 0 no fire (yellow)
+    # 1 on fire (red)
+    # 2 burned  (black)
+    # 3 lake    (blue)
+    # 4 forest  (green)
+    # 5 canyon  (grey)
+    # 6 fuel    (brown)
     # ------------------------------------------------------------------------
 
     # ---- Override the defaults below (these may be changed at anytime) ----
 
-    config.state_colors = [(0,0,0),(1,1,1)]
-    # config.num_generations = 150
-    # config.grid_dims = (200,200)
+    config.num_generations = 300
+    config.grid_dims = (200,200)
+    config.state_colors = [(0.9,0.7,0.1),(1,0,0),(0,0,0),(0,0.5,1),(0,0.3,0),(0.6,0.6,0.6),(0.4,0.1,0.1)]
+    config.initial_grid = np.zeros(config.grid_dims)                # zero grid
+    halfr, halfc = config.grid_dims[0]//2, config.grid_dims[1]//2   # calc central square indices
+    config.initial_grid[halfr:halfr+5, halfc:halfc+5] = 0           # fill square with state 0
+
+    config.initial_grid[0,0] = 6
+    config.initial_grid[0,199] = 6
+    config.initial_grid[40:60,20:60] = 3
+    config.initial_grid[120:160,60:100] =4
+    config.initial_grid[20:140,130:140] = 5
+
 
     # ----------------------------------------------------------------------
 
