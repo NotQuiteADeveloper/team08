@@ -17,16 +17,48 @@ import capyle.utils as utils
 import numpy as np
 
 
-def transition_func(grid, neighbourstates, neighbourcounts):   
+def transition_func(grid, neighbourstates, neighbourcounts):
+    wind_direction = "N"
+    if (wind_direction == "N" or "n"):
+        wind_num = 0
+    elif (wind_direction == "E" or "e"):
+        wind_num = 1
+    elif (wind_direction == "S" or "s"):
+        wind_num = 2
+    else:
+        wind_num = 3
     # dead = state == 0(green), live = state == 1(fire)
     # unpack state counts for state 0 and state 1
+    neighbourstatesI = neighbourstates
     dead_neighbours, live_neighbours = neighbourcounts
+    #neighbourstatesI()
+    print(neighbourstatesI[6,1,:])
+    print(neighbourstatesI[6,:,0])
+    print(neighbourstatesI[:,1,0])
+    print(neighbourstatesI[6,1,0])
+    #loops for each generation
+    print("hi")
+    print(grid[0,:])
+    print(grid[:,0])
+    print(live_neighbours[0,:])
+    print(live_neighbours.shape)
     repr(live_neighbours)
     # create boolean arrays for the birth & survival rules
     # if 3 live neighbours and is dead -> cell born
-    birth = (live_neighbours == 1) & (grid == 0)
+
+    #if (wind_num == 0):
+    #    for i, cell in enumerate(grid)
+    #    birth = (live_neighbours >= 1) & ((neighbourstatesI[6,]
+    for i in range(0,49):
+        for j in range(0,49):
+            if (wind_num == 0 & (neighbourstatesI[6,i-1,j] == 1)):
+                birth = True
+            else:
+                birth = False
+
+
     # if 2 or 3 live neighbours and is alive -> survives
-    survive = ((live_neighbours == 1) | (live_neighbours == 1)) & (grid == 1)
+    survive = (grid == 1)
     # Set all cells to 0 (dead)
     grid[:, :] = 0
     # Set cells to 1 where either cell is born or survives
@@ -46,7 +78,7 @@ def setup(args):
     # ---- Override the defaults below (these may be changed at anytime) ----
 
     config.state_colors = [(0.196, 0.804, 0.196),(1.000, 0.000, 0.000)]
-    # config.num_generations = 150
+    config.num_generations = 10
     config.grid_dims = (50,50)
 
     # ----------------------------------------------------------------------
