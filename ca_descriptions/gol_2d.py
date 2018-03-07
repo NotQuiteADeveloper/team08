@@ -23,6 +23,7 @@ def transition_func(grid, neighbourstates, neighbourcounts):
     dead_neighbours, live_neighbours = neighbourcounts
     # create boolean arrays for the birth & survival rules
     # if 3 live neighbours and is dead -> cell born
+	print("h")
     birth = (live_neighbours == 3) & (grid == 0)
     # if 2 or 3 live neighbours and is alive -> survives
     survive = ((live_neighbours == 2) | (live_neighbours == 3)) & (grid == 1)
@@ -30,6 +31,8 @@ def transition_func(grid, neighbourstates, neighbourcounts):
     grid[:, :] = 0
     # Set cells to 1 where either cell is born or survives
     grid[birth | survive] = 1
+	print("birth")
+	print(birth.shape)
     return grid
 
 
