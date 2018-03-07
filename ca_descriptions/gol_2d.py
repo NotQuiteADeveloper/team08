@@ -18,21 +18,35 @@ import numpy as np
 
 
 def transition_func(grid, neighbourstates, neighbourcounts):
-    # dead = state == 0, live = state == 1
-    # unpack state counts for state 0 and state 1
-    dead_neighbours, live_neighbours = neighbourcounts
-    # create boolean arrays for the birth & survival rules
-    # if 3 live neighbours and is dead -> cell born
-	print("h")
-    birth = (live_neighbours == 3) & (grid == 0)
-    # if 2 or 3 live neighbours and is alive -> survives
-    survive = ((live_neighbours == 2) | (live_neighbours == 3)) & (grid == 1)
-    # Set all cells to 0 (dead)
-    grid[:, :] = 0
-    # Set cells to 1 where either cell is born or survives
-    grid[birth | survive] = 1
-	print("birth")
-	print(birth.shape)
+    unburnt, burning, burnt, lake, forest, canyon, fuel= neighbourcounts
+
+    fuel = (grid == 6) # cells that are currently in state 0
+    grid[fuel] = 1
+
+    unburnt = (grid == 0) # cells that are currently in state 0
+    three_one_neighbours = (neighbourcounts[1] == 2) # cells that have 2 neighbours in state 0
+    unburn_to_burning = unburnt & three_one_neighbours
+    # cells that are currently in state 0 and have exactly 2 neighbours in state 1
+    grid[unburn_to_burning] = 1
+
+    forest = (grid == 4) # cells that are currently in state 4
+    four_one_neighbours = (neighbourcounts[1] == 4) # cells that have 4 neighbours in state 0
+    forest_to_burning = forest & four_one_neighbours
+    # cells that are currently in state 4 and have exactly 4 neighbours in state 1
+    grid[forest_to_burning] = 1
+
+    canyon = (grid == 5) # cells that are currently in state 5
+    two_one_neighbours = (neighbourcounts[1] == 1) # cells that have 1 neighbours in state 0
+    canyon_to_burning = canyon & two_one_neighbours
+    # cells that are currently in state 5 and have exactly 1 neighbours in state 1
+    grid[canyon_to_burning] = 1
+
+    burning = (grid == 1) # cells that are currently in state 2
+    three_one_neighbours = (neighbourcounts[1] == 6) # cells that have 3 neighbours in state 0
+    burning_to_burnt = burning & three_one_neighbours
+    # cells that are currently in state 2 and have exactly 3 neighbours in state 1
+    grid[burning_to_burnt] = 2
+
     return grid
 
 
@@ -54,19 +68,19 @@ def setup(args):
 
     # ---- Override the defaults below (these may be changed at anytime) ----
 
-    config.num_generations = 300
+    config.num_generations = 700
     config.grid_dims = (200,200)
     config.state_colors = [(0.9,0.7,0.1),(1,0,0),(0,0,0),(0,0.5,1),(0,0.3,0),(0.6,0.6,0.6),(0.4,0.1,0.1)]
+
     config.initial_grid = np.zeros(config.grid_dims)                # zero grid
     halfr, halfc = config.grid_dims[0]//2, config.grid_dims[1]//2   # calc central square indices
     config.initial_grid[halfr:halfr+5, halfc:halfc+5] = 0           # fill square with state 0
-
-    config.initial_grid[0,0] = 6
-    config.initial_grid[0,199] = 6
-    config.initial_grid[40:60,20:60] = 3
-    config.initial_grid[120:160,60:100] =4
-    config.initial_grid[20:140,130:140] = 5
-
+    config.initial_grid[40:60,20:60] = 3                            # fill square with state 3
+    config.initial_grid[120:160,60:100] =4                          # fill square with state 4
+    config.initial_grid[20:140,130:140] = 5                         # fill square with state 5
+    #config.initial_grid[0:3,0:3] = 6                                    # fill square with state 6
+    config.initial_grid[0:3,197:200] = 6                                  # fill square with state 6
+    config.wrap = False
 
     # ----------------------------------------------------------------------
 
