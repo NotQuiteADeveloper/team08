@@ -98,7 +98,7 @@ def transition_func(grid, surrounding_fire, neighbourcounts):
 
     #survive = ((on_fire == 2) | (on_fire == 3)) & (grid == 1)
     #grid[:, :] = 0
-    grid[catching_fire | survive] = 1
+    grid[catching_fire] = 1
     return grid
 
 
