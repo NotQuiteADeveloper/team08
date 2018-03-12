@@ -21,7 +21,7 @@ import random
     #return starG
 
 
-def transition_func(grid, surrounding_fire, neighbourcounts):
+def transition_func(grid, surrounding_fire, neighbourcounts,chaparral,area1,area2):
 
     grid_dimensions = 200
     wind_direction = "w" #change direction here
@@ -45,7 +45,7 @@ def transition_func(grid, surrounding_fire, neighbourcounts):
         w_e = np.array([4,2,7,1,6,0,5,3])#wind effect array
         print("w")
 
-    no_fire, on_fire, burned, lake, forest, canyon, fuel = neighbourcounts
+    no_fire, on_fire, burned, lake, forest, canyon, fuel ,burned_canyon, burned_forest= neighbourcounts
     repr(on_fire)
 
     terrain_flammability = np.array([])
@@ -99,6 +99,18 @@ def transition_func(grid, surrounding_fire, neighbourcounts):
     #survive = ((on_fire == 2) | (on_fire == 3)) & (grid == 1)
     #grid[:, :] = 0
     grid[catching_fire] = 1
+
+    cells_in_state_1 = (grid == 1)
+    chaparral[cells_in_state_1] += 1
+    area1[cells_in_state_1] += 1
+    area2[cells_in_state_1] += 1
+
+    decayed_to_burntcha = (chaparral == 2)
+    decayed_to_burntcan = (area1 == 7)
+    decayed_to_burntfor = (area2 == 8)
+    grid[decayed_to_burntcha] = 2
+    grid[decayed_to_burntcan] = 7
+    grid[decayed_to_burntfor] = 8
     return grid
 
 
@@ -108,21 +120,23 @@ def setup(args):
     # ---THE CA MUST BE RELOADED IN THE GUI IF ANY OF THE BELOW ARE CHANGED---
     config.title = "fire"
     config.dimensions = 2
-    config.states = (0, 1, 2, 3, 4, 5, 6)
+    config.states = (0, 1, 2, 3, 4, 5, 6, 7, 8)
     # 0 no fire (yellow)
     # 1 on fire (red)
-    # 2 burned  (black)
+    # 2 burned  (dark red)
     # 3 lake    (blue)
     # 4 forest  (green)
     # 5 canyon  (grey)
     # 6 fuel    (brown)
+    # 7 burned canyon (black)
+    # 8 burned forest (dark green)
     # ------------------------------------------------------------------------
 
     # ---- Override the defaults below (these may be changed at anytime) ----
 
-    config.num_generations = 30 # 1 GENERATION = 2 HOURS
+    config.num_generations = 300 # 1 GENERATION = 2 HOURS
     config.grid_dims = (200,200)
-    config.state_colors = [(0.9,0.7,0.1),(1,0,0),(0,0,0),(0,0.5,1),(0,0.3,0),(0.6,0.6,0.6),(0.4,0.1,0.1)]
+    config.state_colors = [(0.9,0.7,0.1),(1,0,0),(0.3,0,0.1),(0,0.5,1),(0,0.5,0.3),(0.6,0.6,0.6),(0.4,0.1,0.1),(0,0,0),(0,0.3,0)]
 
     config.initial_grid = np.zeros(config.grid_dims)                # zero grid
     halfr, halfc = config.grid_dims[0]//2, config.grid_dims[1]//2   # calc central square indices
@@ -146,9 +160,15 @@ def setup(args):
 def main():
     # Open the config object
     config = setup(sys.argv[1:])
+    chaparral = np.zeros(config.grid_dims)
+    area1 = np.zeros(config.grid_dims)
+    area2 = np.zeros(config.grid_dims)
+    chaparral.fill(-40)
+    area1.fill(-50)
+    area2.fill(-680)
 
     # Create grid object
-    grid = Grid2D(config, transition_func)
+    grid = Grid2D(config, (transition_func, chaparral,area1,area2))
 
     # Run the CA, save grid state every generation to timeline
     timeline = grid.run()
