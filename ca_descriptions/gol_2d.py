@@ -21,10 +21,13 @@ import random
     #return starG
 
 
-def transition_func(grid, surrounding_fire, neighbourcounts,chaparral,area1,area2):
-
+def transition_func(grid, surrounding_fire, neighbourcounts,chaparral,decay_grid):
+    print (decay_grid)
+    cells_in_state_1 = (grid == 1)
+    decay_grid[cells_in_state_1] -= 1
+    #if (decay_grid)
     grid_dimensions = 200
-    wind_direction = "w" #change direction here
+    wind_direction = "s" #change direction here
     #initialGrid = np.zeros((grid_dimensions,grid_dimensions))
     #initialGrid[120:160,60:100] = 4                          # fill square with state 4
     #initialGrid[20:140,130:140] = 5                         # fill square with state 5
@@ -45,7 +48,7 @@ def transition_func(grid, surrounding_fire, neighbourcounts,chaparral,area1,area
         w_e = np.array([4,2,7,1,6,0,5,3])#wind effect array
         print("w")
 
-    no_fire, on_fire, burned, lake, forest, canyon, fuel ,burned_canyon, burned_forest= neighbourcounts
+    no_fire, on_fire, burned, lake, forest, canyon, fuel = neighbourcounts
     repr(on_fire)
 
     terrain_flammability = np.array([])
@@ -60,6 +63,7 @@ def transition_func(grid, surrounding_fire, neighbourcounts,chaparral,area1,area
     for i in range(0 , grid_dimensions):
         for j in range(0 , grid_dimensions):
             random_num = random.random()
+
             if((on_fire[i,j] == 1) & (surrounding_fire[w_e[0],i,j] == 1)): #uses the w_e(wind effect) array
                 catching_fire[i,j] = True if ((grid[i,j] == 0) & (random_num <= 0.7)) else False
             elif((on_fire[i,j] == 1) & ((surrounding_fire[w_e[1],i,j] == 1) | (surrounding_fire[w_e[2],i,j] == 1))): #surrounding fire is a 3d array (8,200,200) with each of the 8 being a direction
@@ -99,18 +103,9 @@ def transition_func(grid, surrounding_fire, neighbourcounts,chaparral,area1,area
     #survive = ((on_fire == 2) | (on_fire == 3)) & (grid == 1)
     #grid[:, :] = 0
     grid[catching_fire] = 1
+    decayed_to_zero = (decay_grid == 0)
+    grid[decayed_to_zero] = 2
 
-    cells_in_state_1 = (grid == 1)
-    chaparral[cells_in_state_1] += 1
-    area1[cells_in_state_1] += 1
-    area2[cells_in_state_1] += 1
-
-    decayed_to_burntcha = (chaparral == 2)
-    decayed_to_burntcan = (area1 == 7)
-    decayed_to_burntfor = (area2 == 8)
-    grid[decayed_to_burntcha] = 2
-    grid[decayed_to_burntcan] = 7
-    grid[decayed_to_burntfor] = 8
     return grid
 
 
@@ -120,7 +115,7 @@ def setup(args):
     # ---THE CA MUST BE RELOADED IN THE GUI IF ANY OF THE BELOW ARE CHANGED---
     config.title = "fire"
     config.dimensions = 2
-    config.states = (0, 1, 2, 3, 4, 5, 6, 7, 8)
+    config.states = (0, 1, 2, 3, 4, 5, 6)
     # 0 no fire (yellow)
     # 1 on fire (red)
     # 2 burned  (dark red)
@@ -134,9 +129,9 @@ def setup(args):
 
     # ---- Override the defaults below (these may be changed at anytime) ----
 
-    config.num_generations = 300 # 1 GENERATION = 2 HOURS
+    config.num_generations = 500 # 1 GENERATION = 2 HOURS
     config.grid_dims = (200,200)
-    config.state_colors = [(0.9,0.7,0.1),(1,0,0),(0.3,0,0.1),(0,0.5,1),(0,0.5,0.3),(0.6,0.6,0.6),(0.4,0.1,0.1),(0,0,0),(0,0.3,0)]
+    config.state_colors = [(0.9,0.7,0.1),(1,0,0),(0,0,0),(0,0.5,1),(0,0.5,0.3),(0.6,0.6,0.6),(0.4,0.1,0.1)]
 
     config.initial_grid = np.zeros(config.grid_dims)                # zero grid
     halfr, halfc = config.grid_dims[0]//2, config.grid_dims[1]//2   # calc central square indices
@@ -163,12 +158,17 @@ def main():
     chaparral = np.zeros(config.grid_dims)
     area1 = np.zeros(config.grid_dims)
     area2 = np.zeros(config.grid_dims)
-    chaparral.fill(-40)
-    area1.fill(-50)
-    area2.fill(-680)
-
+    decay_grid = np.zeros(config.grid_dims)
+    # decay grid -100 = lake
+    decay_grid[:,:] = 40
+    decay_grid[0:3,197:200] = 10
+    decay_grid[40:60,20:60] = -100
+    decay_grid[120:160,60:100] = 320
+    decay_grid[20:140,130:140] = 8
+    print(decay_grid)
+    print(decay_grid.shape)
     # Create grid object
-    grid = Grid2D(config, (transition_func, chaparral,area1,area2))
+    grid = Grid2D(config, (transition_func, chaparral, decay_grid))
 
     # Run the CA, save grid state every generation to timeline
     timeline = grid.run()
